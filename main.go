@@ -7,12 +7,19 @@ import (
 )
 
 func main() {
-	actors, err := show.ActorsForShow("https://www.imdb.com/title/tt11737520/fullcredits")
+	s1, err := show.NewShow("https://www.imdb.com/title/tt0110912/fullcredits")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	for _, a := range actors {
+	s2, err := show.NewShow("https://www.imdb.com/title/tt3460252/fullcredits")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	sharedActors := show.SharedActors(s1, s2)
+
+	for _, a := range sharedActors {
 		fmt.Println(a)
 	}
 }

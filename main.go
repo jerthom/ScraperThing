@@ -3,26 +3,16 @@ package main
 import (
 	"fmt"
 
-	"github.com/gocolly/colly"
+	"github.com/jerthom/ScraperThing/show"
 )
 
 func main() {
-	c := colly.NewCollector(
-		colly.AllowedDomains("imdb.com", "www.imdb.com"),
-	)
+	actors, err := show.ActorsForShow("https://www.imdb.com/title/tt11737520/fullcredits")
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	c.OnHTML("table.cast_list > tbody", func(e *colly.HTMLElement) {
-		e.ForEach("tr", func(_ int, el *colly.HTMLElement) {
-			el.ForEach("td.primary_photo", func(_ int, el2 *colly.HTMLElement) {
-				actorUrl := el2.ChildAttr("a[href]", "href")
-				c.Visit(e.Request.AbsoluteURL(actorUrl))
-			})
-		})
-	})
-
-	c.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL.String())
-	})
-
-	c.Visit("https://www.imdb.com/title/tt11737520/fullcredits")
+	for _, a := range actors {
+		fmt.Println(a)
+	}
 }

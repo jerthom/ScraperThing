@@ -2,7 +2,6 @@ package show
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/gocolly/colly"
@@ -18,18 +17,15 @@ type Show struct {
 	Actors []actor.Actor `json:"actors"`
 }
 
+// NewShow creates a Show by scraping the relevant data from the provided url
 func NewShow(showUrl string) (*Show, error) {
 	retS := &Show{URL: showUrl}
 
 	a, err := actors(showUrl)
-	// Sort the actors by name; this makes comparing show actor lists quicker
-	sort.Slice(a, func(i int, j int) bool {
-		return a[i].Name < a[j].Name
-	})
-
 	if err != nil {
 		return nil, fmt.Errorf("error getting show details: %w", err)
 	}
+
 	retS.Actors = a
 
 	return retS, nil
@@ -46,8 +42,13 @@ func actors(showUrl string) ([]actor.Actor, error) {
 				if k == 1 {
 					a := actor.Actor{}
 					a.Name = strings.TrimSpace(el2.Text)
+					
 					partialUrl := el2.ChildAttr("a[href]", "href")
-					a.URL = e.Request.AbsoluteURL(partialUrl)
+					// Trim reference off end of url.
+					url := e.Request.AbsoluteURL(partialUrl)
+					url, _, _ = strings.Cut(url, "/?ref")
+					a.URL = url
+
 					actorURLs = append(actorURLs, a)
 				}
 			})
@@ -61,27 +62,19 @@ func actors(showUrl string) ([]actor.Actor, error) {
 	return actorURLs, nil
 }
 
-func SharedActors(s1 *Show, s2 *Show) []actor.Actor {
-	var shared []actor.Actor
-
-	for i, j := 0, 0; i < len(s1.Actors) && j < len(s2.Actors); {
-		if s1.Actors[i].Name == s2.Actors[j].Name {
-			shared = append(shared, s1.Actors[i])
-			i += 1
-			j += 1
-			continue
-		}
-
-		if s1.Actors[i].Name < s2.Actors[j].Name {
-			i += 1
-			continue
-		}
-
-		if s1.Actors[i].Name > s2.Actors[j].Name {
-			j += 1
-			continue
+// SharedActors returns the list of Actors which appear in both of the specified shows
+func SharedActors(shows []Show) []actor.Actor {
+	actors := make(map[actor.Actor]int)
+	for _, s := range shows {
+		for _, a := range s.Actors {
+			actors[a] = actors[a] + 1
 		}
 	}
-
+	var shared []actor.Actor
+	for a, i := range actors {
+		if i > 1 {
+			shared = append(shared, a)
+		}
+	}
 	return shared
 }

@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	//cmd.Execute()
 	s1, err := show.NewShow("https://www.imdb.com/title/tt0110912/fullcredits")
 	if err != nil {
 		fmt.Println(err)
@@ -17,9 +18,10 @@ func main() {
 		fmt.Println(err)
 	}
 
-	sharedActors := show.SharedActors(s1, s2)
+	sharedActors := show.SharedActors([]show.Show{*s1, *s2})
 
 	for _, a := range sharedActors {
 		fmt.Println(a)
 	}
+
 }

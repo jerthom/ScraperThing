@@ -3,6 +3,7 @@ package show
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gocolly/colly"
@@ -19,22 +20,21 @@ type Show struct {
 }
 
 // NewShow creates a Show by scraping the relevant data from the provided url
-func NewShow(showUrl string) (*Show, error) {
+func NewShow(showUrl string, shows chan Show, wg *sync.WaitGroup) {
+	defer wg.Done()
 	start := time.Now()
-	fmt.Println("start time ", showUrl, ": ", start)
-	retS := &Show{URL: showUrl}
+	retS := Show{URL: showUrl}
 
 	a, err := actors(showUrl)
 	if err != nil {
-		return nil, fmt.Errorf("error getting show details: %w", err)
+		fmt.Println("error getting show details: %w", err)
 	}
 
 	retS.Actors = a
+	shows <- retS
 	end := time.Now()
-	fmt.Println("end time ", showUrl, ": ", end)
 	diff := end.Sub(start)
 	fmt.Println("duration ", showUrl, ": ", diff)
-	return retS, nil
 }
 
 func actors(showUrl string) ([]actor.Actor, error) {

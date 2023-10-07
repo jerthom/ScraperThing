@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jerthom/ScraperThing/show"
 )
 
 func main() {
 	//cmd.Execute()
+	start := time.Now()
 	s1, err := show.NewShow("https://www.imdb.com/title/tt0110912/fullcredits")
 	if err != nil {
 		fmt.Println(err)
@@ -23,5 +25,7 @@ func main() {
 	for _, a := range sharedActors {
 		fmt.Println(a)
 	}
-
+	end := time.Now()
+	duration := end.Sub(start)
+	fmt.Println("main duration: ", duration)
 }

@@ -3,6 +3,7 @@ package show
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gocolly/colly"
 
@@ -19,6 +20,8 @@ type Show struct {
 
 // NewShow creates a Show by scraping the relevant data from the provided url
 func NewShow(showUrl string) (*Show, error) {
+	start := time.Now()
+	fmt.Println("start time ", showUrl, ": ", start)
 	retS := &Show{URL: showUrl}
 
 	a, err := actors(showUrl)
@@ -27,7 +30,10 @@ func NewShow(showUrl string) (*Show, error) {
 	}
 
 	retS.Actors = a
-
+	end := time.Now()
+	fmt.Println("end time ", showUrl, ": ", end)
+	diff := end.Sub(start)
+	fmt.Println("duration ", showUrl, ": ", diff)
 	return retS, nil
 }
 
@@ -42,7 +48,7 @@ func actors(showUrl string) ([]actor.Actor, error) {
 				if k == 1 {
 					a := actor.Actor{}
 					a.Name = strings.TrimSpace(el2.Text)
-					
+
 					partialUrl := el2.ChildAttr("a[href]", "href")
 					// Trim reference off end of url.
 					url := e.Request.AbsoluteURL(partialUrl)

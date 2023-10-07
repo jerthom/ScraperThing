@@ -19,15 +19,16 @@ type Show struct {
 	Actors []actor.Actor `json:"actors"`
 }
 
-// NewShow creates a Show by scraping the relevant data from the provided url, and then writes that show to the shows channel
-func NewShow(showUrl string, showChan chan Show, wg *sync.WaitGroup) {
+// NewShowCon (concurrent) creates a Show by scraping the relevant data from the provided url, and then writes that show to showChan
+func NewShowCon(showUrl string, showChan chan Show, wg *sync.WaitGroup) {
 	defer wg.Done()
 	start := time.Now()
 
 	// Scrape actor information
 	a, err := actors(showUrl)
 	if err != nil {
-		fmt.Println("error getting show details: %w", err)
+		fmt.Println("error getting show details: ", err)
+		return
 	}
 
 	s := Show{URL: showUrl, Actors: a}
@@ -35,6 +36,23 @@ func NewShow(showUrl string, showChan chan Show, wg *sync.WaitGroup) {
 	end := time.Now()
 	diff := end.Sub(start)
 	fmt.Println("duration ", showUrl, ": ", diff)
+}
+
+// NewShowSec (sequential) creates a Show by scraping the relevant data from the provided url
+func NewShowSec(showUrl string) (*Show, error) {
+	start := time.Now()
+
+	// Scrape actor information
+	a, err := actors(showUrl)
+	if err != nil {
+		return nil, fmt.Errorf("error getting show details: %w", err)
+	}
+
+	s := Show{URL: showUrl, Actors: a}
+	end := time.Now()
+	diff := end.Sub(start)
+	fmt.Println("duration ", showUrl, ": ", diff)
+	return &s, nil
 }
 
 func actors(showUrl string) ([]actor.Actor, error) {

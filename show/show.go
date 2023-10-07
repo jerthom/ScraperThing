@@ -19,19 +19,19 @@ type Show struct {
 	Actors []actor.Actor `json:"actors"`
 }
 
-// NewShow creates a Show by scraping the relevant data from the provided url
-func NewShow(showUrl string, shows chan Show, wg *sync.WaitGroup) {
+// NewShow creates a Show by scraping the relevant data from the provided url, and then writes that show to the shows channel
+func NewShow(showUrl string, showChan chan Show, wg *sync.WaitGroup) {
 	defer wg.Done()
 	start := time.Now()
-	retS := Show{URL: showUrl}
 
+	// Scrape actor information
 	a, err := actors(showUrl)
 	if err != nil {
 		fmt.Println("error getting show details: %w", err)
 	}
 
-	retS.Actors = a
-	shows <- retS
+	s := Show{URL: showUrl, Actors: a}
+	showChan <- s
 	end := time.Now()
 	diff := end.Sub(start)
 	fmt.Println("duration ", showUrl, ": ", diff)
@@ -68,8 +68,8 @@ func actors(showUrl string) ([]actor.Actor, error) {
 	return actorURLs, nil
 }
 
-// SharedActors returns the list of Actors which appear in both of the specified shows
-func SharedActors(shows []Show) []actor.Actor {
+// SharedActors returns the list of Actors which appear in *at least* the number of shows indicated by threshold
+func SharedActors(shows []Show, threshold int) []actor.Actor {
 	actors := make(map[actor.Actor]int)
 	for _, s := range shows {
 		for _, a := range s.Actors {
@@ -78,7 +78,7 @@ func SharedActors(shows []Show) []actor.Actor {
 	}
 	var shared []actor.Actor
 	for a, i := range actors {
-		if i > 1 {
+		if i >= threshold {
 			shared = append(shared, a)
 		}
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/jerthom/ScraperThing/show"
 )
 
+// Scrape show information concurrently
 func showsCon(showUrls []string) []show.Show {
 	// Scrape for shows concurrently
 	showChan := make(chan show.Show, len(showUrls))
@@ -27,6 +28,7 @@ func showsCon(showUrls []string) []show.Show {
 	return shows
 }
 
+// Scrape show information sequentially
 func showsSeq(showUrls []string) []show.Show {
 	var shows []show.Show
 	for _, sUrl := range showUrls {
@@ -47,7 +49,7 @@ func main() {
 		"https://www.imdb.com/title/tt11737520/fullcredits", "https://www.imdb.com/title/tt7131622/fullcredits", "https://www.imdb.com/title/tt0116483/fullcredits",
 		"https://www.imdb.com/title/tt0142342/fullcredits", "blarg"}
 
-	parallel := false
+	parallel := true
 	var shows []show.Show
 	if parallel {
 		shows = showsCon(showUrls)

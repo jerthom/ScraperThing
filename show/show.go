@@ -68,8 +68,8 @@ func actors(showUrl string) ([]actor.Actor, error) {
 					a.Name = strings.TrimSpace(el2.Text)
 
 					partialUrl := el2.ChildAttr("a[href]", "href")
-					// Trim reference off end of url.
 					url := e.Request.AbsoluteURL(partialUrl)
+					// Trim reference off end of url.
 					url, _, _ = strings.Cut(url, "/?ref")
 					a.URL = url
 
